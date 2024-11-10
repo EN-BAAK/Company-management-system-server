@@ -1,3 +1,5 @@
+const bcrypt = require("bcryptjs");
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     "User",
@@ -14,6 +16,11 @@ module.exports = (sequelize, DataTypes) => {
       personal_id: {
         type: DataTypes.STRING,
         allowNull: true,
+        unique: true,
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       phone: {
         type: DataTypes.STRING,
@@ -36,23 +43,25 @@ module.exports = (sequelize, DataTypes) => {
           fields: ["fullName"],
           name: "full_name_index",
         },
-        {
-          fields: ["personal_id"],
-          name: "personal_id_index",
-        },
       ],
       tableName: "users",
       timestamps: false,
       hooks: {
-        beforeCreate: async (user, options) => {
+        beforeCreate: async (user) => {
           if (user.password) {
-            const hashedPassword = await bcrypt.hash(user.password, 10);
+            const hashedPassword = await bcrypt.hash(
+              user.password,
+              parseInt(process.env.SALT)
+            );
             user.password = hashedPassword;
           }
         },
-        beforeUpdate: async (user, options) => {
+        beforeUpdate: async (user) => {
           if (user.password) {
-            const hashedPassword = await bcrypt.hash(user.password, 10);
+            const hashedPassword = await bcrypt.hash(
+              user.password,
+              parseInt(process.env.SALT)
+            );
             user.password = hashedPassword;
           }
         },
