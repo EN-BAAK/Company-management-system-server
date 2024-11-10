@@ -25,5 +25,3 @@ config
 *.njsproj
 *.sln
 *.sw?
-
-config.json
