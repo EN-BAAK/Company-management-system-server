@@ -1,6 +1,7 @@
 const { catchAsyncErrors } = require("./catchAsyncErrors");
 const { ErrorHandler } = require("./errorMiddleware");
 const jwt = require("jsonwebtoken");
+const { User } = require("../models");
 
 const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
   const token = req.cookies["adminToken"] || req.cookies["workerToken"];
@@ -9,7 +10,13 @@ const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
 
   const decode = await jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-  req.userId = decode.id;
+  const user = User.findByPk(decode.id, {
+    attributes: ["id", "fullName", "role"],
+  });
+
+  if (!user) return next(new ErrorHandler("Internal server error", 500));
+
+  req.user = user;
 
   next();
 });

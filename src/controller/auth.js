@@ -23,7 +23,7 @@ const login = catchAsyncErrors(async (req, res, next) => {
 const verifyToken = catchAsyncErrors(async (req, res) => {
   res.status(200).send({
     success: true,
-    userId: req.userId,
+    user: req.user,
   });
 });
 
