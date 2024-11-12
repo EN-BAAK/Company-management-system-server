@@ -10,12 +10,12 @@ const login = catchAsyncErrors(async (req, res, next) => {
     where: { phone },
   });
 
-  if (!user) return next(new ErrorHandler("Wrong phone or password", 400));
+  if (!user) return next(new ErrorHandler("Wrong phone or password", 401));
 
   const correctPassword = await comparePassword(password, user.password);
 
   if (!correctPassword)
-    return next(new ErrorHandler("Wrong phone or password", 400));
+    return next(new ErrorHandler("Wrong phone or password", 401));
 
   generateToken(user, "User login successfully", 200, res, next);
 });

@@ -10,6 +10,7 @@ const { errorMiddleware } = require("./src/middleware/errorMiddleware");
 const userRouter = require("./src/routers/user");
 const authRouter = require("./src/routers/auth");
 const companyRouter = require("./src/routers/company");
+const adminRouter = require("./src/routers/admin");
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/company", companyRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(errorMiddleware);
 

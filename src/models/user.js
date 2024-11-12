@@ -60,15 +60,6 @@ module.exports = (sequelize, DataTypes) => {
             user.password = hashedPassword;
           }
         },
-        beforeUpdate: async (user) => {
-          if (user.password) {
-            const hashedPassword = await bcrypt.hash(
-              user.password,
-              parseInt(process.env.SALT)
-            );
-            user.password = hashedPassword;
-          }
-        },
       },
     }
   );

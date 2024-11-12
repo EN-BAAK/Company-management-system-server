@@ -45,7 +45,7 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
   if (!user) return next(new ErrorHandler("User not found", 404));
 
   if (user.role === "admin")
-    return next(new ErrorHandler("Internal server error", 404));
+    return next(new ErrorHandler("Internal server error", 500));
 
   if (fullName) user.fullName = fullName;
 
@@ -55,7 +55,13 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
 
   if (phone) user.phone = phone;
 
-  if (password) user.password = password;
+  if (password) {
+    const hashedPassword = await bcrypt.hash(
+      password,
+      parseInt(process.env.SALT)
+    );
+    admin.password = hashedPassword;
+  }
 
   if (notes) user.notes = notes;
 
