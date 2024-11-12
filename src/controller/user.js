@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { catchAsyncErrors } = require("../middleware/catchAsyncErrors");
 const { ErrorHandler } = require("../middleware/errorMiddleware");
 const { User } = require("../models");
@@ -64,11 +65,31 @@ const deleteWorker = catchAsyncErrors(async (req, res, next) => {
 
   res
     .status(200)
-    .json({ success: true, message: "Worker deleted successfully" });
+    .json({
+      success: true,
+      message: "Worker deleted successfully",
+      id: user.id,
+    });
 });
 
+const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const offset = parseInt(req.query.offset) || 20;
+
+  const users = await User.findAll({
+    attributes: { exclude: ["password", "role", "work_type"] },
+    limit: offset,
+    offset: (page - 1) * offset,
+    where: {
+      id: { [Op.ne]: 1 },
+    },
+  });
+
+  res.status(200).json({ success: true, workers: [...users] });
+});
 module.exports = {
   createWorker,
   editUser,
   deleteWorker,
+  fetchWorkers,
 };

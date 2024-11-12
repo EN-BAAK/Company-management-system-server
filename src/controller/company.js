@@ -55,11 +55,28 @@ const deleteCompany = catchAsyncErrors(async (req, res, next) => {
 
   res
     .status(200)
-    .json({ success: true, message: "Company deleted successfully" });
+    .json({
+      success: true,
+      message: "Company deleted successfully",
+      id: company.id,
+    });
+});
+
+const fetchCompanies = catchAsyncErrors(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const offset = parseInt(req.query.offset) || 20;
+
+  const companies = await Company.findAll({
+    limit: offset,
+    offset: (page - 1) * offset,
+  });
+
+  res.status(200).json({ success: true, companies });
 });
 
 module.exports = {
   createCompany,
   editCompany,
   deleteCompany,
+  fetchCompanies,
 };

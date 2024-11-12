@@ -4,6 +4,7 @@ const {
   createCompany,
   editCompany,
   deleteCompany,
+  fetchCompanies,
 } = require("../controller/company");
 const {
   validateCreateCompany,
@@ -13,16 +14,18 @@ const {
 
 const router = express.Router();
 
-router.post("/create", isAdmin, validateCreateCompany, createCompany);
+router.get("/", isAdmin, fetchCompanies);
+
+router.post("/", isAdmin, validateCreateCompany, createCompany);
 
 router.put(
-  "/edit/:companyId",
+  "/:companyId",
   isAdmin,
   validateIdParam,
   validateEditCompany,
   editCompany
 );
 
-router.delete("/delete/:companyId", isAdmin, validateIdParam, deleteCompany);
+router.delete("/:companyId", isAdmin, validateIdParam, deleteCompany);
 
 module.exports = router;
