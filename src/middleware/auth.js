@@ -10,7 +10,7 @@ const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
 
   const decode = await jwt.verify(token, process.env.JWT_SECRET_KEY);
 
-  const user = User.findByPk(decode.id, {
+  const user = await User.findByPk(decode.id, {
     attributes: ["id", "fullName", "role"],
   });
 

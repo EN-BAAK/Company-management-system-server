@@ -1,10 +1,13 @@
 const express = require("express");
 const { isAdmin } = require("../middleware/auth");
+const multer = require("multer");
+const upload = multer();
 const {
   createWorker,
   editUser,
   deleteWorker,
   fetchWorkers,
+  fetchSpecificWorker,
 } = require("../controller/user");
 const {
   validateCreateWorker,
@@ -14,12 +17,14 @@ const {
 const router = express.Router();
 
 router.get("/", isAdmin, fetchWorkers);
+router.get("/:userId", isAdmin, fetchSpecificWorker);
 
 router.post("/", isAdmin, validateCreateWorker, createWorker);
 
 router.put(
   "/:userId",
   isAdmin,
+  upload.none(),
   validateUserIdParam,
   validateEditWorker,
   editUser

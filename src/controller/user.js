@@ -12,7 +12,7 @@ const createWorker = catchAsyncErrors(async (req, res, next) => {
 
   if (user) return next(new ErrorHandler("The user already exists", 400));
 
-  await User.create({
+  const newUser = await User.create({
     fullName,
     phone,
     role: "worker",
@@ -21,7 +21,17 @@ const createWorker = catchAsyncErrors(async (req, res, next) => {
     password,
   });
 
-  res.status(200).json({ succuss: true, message: "Worker added successfully" });
+  res.status(200).json({
+    succuss: true,
+    message: "Worker added successfully",
+    user: {
+      id: newUser.id,
+      fullName: newUser.fullName,
+      phone: newUser.phone,
+      work_type: newUser.work_type,
+      personal_id: newUser.personal_id,
+    },
+  });
 });
 
 const editUser = catchAsyncErrors(async (req, res, next) => {
@@ -30,9 +40,10 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
 
   const user = await User.findByPk(userId);
 
-  if (!user) {
-    return next(new ErrorHandler("User not found", 404));
-  }
+  if (!user) return next(new ErrorHandler("User not found", 404));
+
+  if (user.role === "admin")
+    return next(new ErrorHandler("Internal server error", 404));
 
   if (fullName) user.fullName = fullName;
 
@@ -46,7 +57,17 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
 
   await user.save();
 
-  res.status(200).json({ success: true, message: "User updated successfully" });
+  res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    user: {
+      id: user.id,
+      fullName: user.fullName,
+      phone: user.phone,
+      work_type: user.work_type,
+      personal_id: user.personal_id,
+    },
+  });
 });
 
 const deleteWorker = catchAsyncErrors(async (req, res, next) => {
@@ -63,13 +84,11 @@ const deleteWorker = catchAsyncErrors(async (req, res, next) => {
 
   await user.destroy();
 
-  res
-    .status(200)
-    .json({
-      success: true,
-      message: "Worker deleted successfully",
-      id: user.id,
-    });
+  res.status(200).json({
+    success: true,
+    message: "Worker deleted successfully",
+    id: user.id,
+  });
 });
 
 const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
@@ -77,7 +96,7 @@ const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
   const offset = parseInt(req.query.offset) || 20;
 
   const users = await User.findAll({
-    attributes: { exclude: ["password", "role", "work_type"] },
+    attributes: { exclude: ["password", "role"] },
     limit: offset,
     offset: (page - 1) * offset,
     where: {
@@ -87,9 +106,21 @@ const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
 
   res.status(200).json({ success: true, workers: [...users] });
 });
+
+const fetchSpecificWorker = catchAsyncErrors(async (req, res, next) => {
+  const id = req.params.userId;
+
+  const users = await User.findByPk(id, {
+    attributes: { exclude: ["password", "role"] },
+  });
+
+  res.status(200).json({ success: true, worker: user });
+});
+
 module.exports = {
   createWorker,
   editUser,
   deleteWorker,
   fetchWorkers,
+  fetchSpecificWorker,
 };
