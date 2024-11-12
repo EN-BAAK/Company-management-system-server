@@ -3,7 +3,7 @@ const { ErrorHandler } = require("../middleware/errorMiddleware");
 const { Company } = require("../models");
 
 const createCompany = catchAsyncErrors(async (req, res, next) => {
-  const { name, phone } = req.body;
+  const { name, phone, notes } = req.body;
 
   const company = await Company.findOne({
     where: { phone },
@@ -11,18 +11,21 @@ const createCompany = catchAsyncErrors(async (req, res, next) => {
 
   if (company) return next(new ErrorHandler("The company already exists", 400));
 
-  await Company.create({
+  const newCompany = await Company.create({
     name,
     phone,
+    notes,
   });
 
-  res
-    .status(200)
-    .json({ success: true, message: "Company added successfully" });
+  res.status(200).json({
+    success: true,
+    message: "Company added successfully",
+    company: newCompany,
+  });
 });
 
 const editCompany = catchAsyncErrors(async (req, res, next) => {
-  const { name, phone } = req.body;
+  const { name, phone, notes } = req.body;
   const companyId = req.params.companyId;
 
   const company = await Company.findByPk(companyId);
@@ -35,11 +38,15 @@ const editCompany = catchAsyncErrors(async (req, res, next) => {
 
   if (phone) company.phone = phone;
 
+  if (notes) company.notes = notes;
+
   await company.save();
 
-  res
-    .status(200)
-    .json({ success: true, message: "Company updated successfully" });
+  res.status(200).json({
+    success: true,
+    message: "Company updated successfully",
+    company: company,
+  });
 });
 
 const deleteCompany = catchAsyncErrors(async (req, res, next) => {
@@ -53,13 +60,11 @@ const deleteCompany = catchAsyncErrors(async (req, res, next) => {
 
   await company.destroy();
 
-  res
-    .status(200)
-    .json({
-      success: true,
-      message: "Company deleted successfully",
-      id: company.id,
-    });
+  res.status(200).json({
+    success: true,
+    message: "Company deleted successfully",
+    id: company.id,
+  });
 });
 
 const fetchCompanies = catchAsyncErrors(async (req, res, next) => {

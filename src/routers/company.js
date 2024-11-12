@@ -1,5 +1,7 @@
 const express = require("express");
 const { isAdmin } = require("../middleware/auth");
+const multer = require("multer");
+const upload = multer();
 const {
   createCompany,
   editCompany,
@@ -21,6 +23,7 @@ router.post("/", isAdmin, validateCreateCompany, createCompany);
 router.put(
   "/:companyId",
   isAdmin,
+  upload.none(),
   validateIdParam,
   validateEditCompany,
   editCompany

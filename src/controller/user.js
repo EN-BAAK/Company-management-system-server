@@ -4,7 +4,7 @@ const { ErrorHandler } = require("../middleware/errorMiddleware");
 const { User } = require("../models");
 
 const createWorker = catchAsyncErrors(async (req, res, next) => {
-  const { fullName, personal_id, phone, work_type, password } = req.body;
+  const { fullName, personal_id, phone, work_type, password, notes } = req.body;
 
   const user = await User.findOne({
     where: { phone },
@@ -19,6 +19,7 @@ const createWorker = catchAsyncErrors(async (req, res, next) => {
     work_type,
     personal_id,
     password,
+    notes,
   });
 
   res.status(200).json({
@@ -30,12 +31,13 @@ const createWorker = catchAsyncErrors(async (req, res, next) => {
       phone: newUser.phone,
       work_type: newUser.work_type,
       personal_id: newUser.personal_id,
+      notes: newUser.notes,
     },
   });
 });
 
 const editUser = catchAsyncErrors(async (req, res, next) => {
-  const { fullName, personal_id, phone, work_type, password } = req.body;
+  const { fullName, personal_id, phone, work_type, password, notes } = req.body;
   const userId = req.params.userId;
 
   const user = await User.findByPk(userId);
@@ -55,6 +57,8 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
 
   if (password) user.password = password;
 
+  if (notes) user.notes = notes;
+
   await user.save();
 
   res.status(200).json({
@@ -66,6 +70,7 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
       phone: user.phone,
       work_type: user.work_type,
       personal_id: user.personal_id,
+      notes: user.notes,
     },
   });
 });
@@ -107,20 +112,20 @@ const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ success: true, workers: [...users] });
 });
 
-const fetchSpecificWorker = catchAsyncErrors(async (req, res, next) => {
-  const id = req.params.userId;
+// const fetchSpecificWorker = catchAsyncErrors(async (req, res, next) => {
+//   const id = req.params.userId;
 
-  const users = await User.findByPk(id, {
-    attributes: { exclude: ["password", "role"] },
-  });
+//   const users = await User.findByPk(id, {
+//     attributes: { exclude: ["password", "role"] },
+//   });
 
-  res.status(200).json({ success: true, worker: user });
-});
+//   res.status(200).json({ success: true, worker: user });
+// });
 
 module.exports = {
   createWorker,
   editUser,
   deleteWorker,
   fetchWorkers,
-  fetchSpecificWorker,
+  // fetchSpecificWorker,
 };
