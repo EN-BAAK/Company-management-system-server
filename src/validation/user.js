@@ -10,14 +10,8 @@ const validateCreateWorker = [
   body("phone")
     .notEmpty()
     .withMessage("Mobile number should not be empty")
-    .isString()
-    .withMessage("Mobile number should be string"),
-  body("work_type")
-    .notEmpty()
-    .withMessage("Work type should not be empty")
-    .isString()
-    .withMessage("Work type should be string"),
-  body("personal_id").isString().withMessage("Personal ID should be string"),
+    .isInt()
+    .withMessage("Mobile number should be an integer number"),
   body("password")
     .notEmpty()
     .withMessage("password should not be empty")
@@ -36,9 +30,8 @@ const validateCreateWorker = [
 
 const validateEditWorker = [
   body("fullName").isString().optional(),
-  body("phone").isString().optional(),
-  body("work_type").isString().optional(),
-  body("personal_id").isString().optional(),
+  body("phone").isInt().optional(),
+  body("personal_id").isInt().optional(),
   body("password").isString().optional(),
   (req, res, next) => {
     const result = validationResult(req);

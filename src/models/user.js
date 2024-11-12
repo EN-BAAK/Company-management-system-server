@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       personal_id: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: true,
         unique: true,
       },
@@ -23,13 +23,9 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       phone: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
-      },
-      work_type: {
-        type: DataTypes.STRING,
-        allowNull: true,
       },
       notes: {
         type: DataTypes.STRING,

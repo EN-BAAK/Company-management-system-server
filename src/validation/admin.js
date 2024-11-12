@@ -49,8 +49,8 @@ const validateEditPhone = [
   body("newPhone")
     .notEmpty()
     .withMessage("Mobile number should not be empty")
-    .isString()
-    .withMessage("Mobile number should be string"),
+    .isInt()
+    .withMessage("Mobile number should be an integer number"),
   (req, res, next) => {
     const result = validationResult(req);
 

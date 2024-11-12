@@ -38,7 +38,7 @@ const editCompany = catchAsyncErrors(async (req, res, next) => {
 
   if (phone) company.phone = phone;
 
-  if (notes) company.notes = notes;
+  company.notes = notes ? notes : null;
 
   await company.save();
 

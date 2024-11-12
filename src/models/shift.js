@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         },
         name: "company_id_foreign_key",
       },
+      work_type: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       startHour: {
         type: DataTypes.TIME,
         allowNull: true,

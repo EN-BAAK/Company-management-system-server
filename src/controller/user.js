@@ -16,8 +16,7 @@ const createWorker = catchAsyncErrors(async (req, res, next) => {
     fullName,
     phone,
     role: "worker",
-    work_type,
-    personal_id,
+    personal_id: personal_id ? personal_id : null,
     password,
     notes,
   });
@@ -29,7 +28,6 @@ const createWorker = catchAsyncErrors(async (req, res, next) => {
       id: newUser.id,
       fullName: newUser.fullName,
       phone: newUser.phone,
-      work_type: newUser.work_type,
       personal_id: newUser.personal_id,
       notes: newUser.notes,
     },
@@ -37,7 +35,7 @@ const createWorker = catchAsyncErrors(async (req, res, next) => {
 });
 
 const editUser = catchAsyncErrors(async (req, res, next) => {
-  const { fullName, personal_id, phone, work_type, password, notes } = req.body;
+  const { fullName, personal_id, phone, password, notes } = req.body;
   const userId = req.params.userId;
 
   const user = await User.findByPk(userId);
@@ -49,9 +47,7 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
 
   if (fullName) user.fullName = fullName;
 
-  if (personal_id) user.personal_id = personal_id;
-
-  if (work_type) user.work_type = work_type;
+  user.personal_id = personal_id ? personal_id : null;
 
   if (phone) user.phone = phone;
 
@@ -63,7 +59,7 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
     admin.password = hashedPassword;
   }
 
-  if (notes) user.notes = notes;
+  user.notes = notes ? notes : null;
 
   await user.save();
 
@@ -74,7 +70,6 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
       id: user.id,
       fullName: user.fullName,
       phone: user.phone,
-      work_type: user.work_type,
       personal_id: user.personal_id,
       notes: user.notes,
     },
