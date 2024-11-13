@@ -206,13 +206,11 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
 
   const where = {};
 
-  if (workerName)
-    where["$worker.fullName$"] = { [Op.like]: `%${workerName.trim()}%` };
+  if (workerName) where["$worker.fullName$"] = { [Op.like]: `%${workerName}%` };
 
   if (workerPhone) where["$worker.phone$"] = { [Op.like]: `%${workerPhone}%` };
 
-  if (companyName)
-    where["$company.name$"] = { [Op.like]: `%${companyName.trim()}%` };
+  if (companyName) where["$company.name$"] = { [Op.like]: `%${companyName}%` };
 
   if (date1 && date2) {
     const startDate = new Date(date1);

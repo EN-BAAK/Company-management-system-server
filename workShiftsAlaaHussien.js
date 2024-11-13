@@ -12,6 +12,7 @@ const authRouter = require("./src/routers/auth");
 const companyRouter = require("./src/routers/company");
 const adminRouter = require("./src/routers/admin");
 const shiftRouter = require("./src/routers/shift");
+const reportRouter = require("./src/routers/report");
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/company", companyRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/shift", shiftRouter);
+app.use("/api/report", reportRouter);
 
 app.use(errorMiddleware);
 
