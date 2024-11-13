@@ -70,13 +70,22 @@ const deleteCompany = catchAsyncErrors(async (req, res, next) => {
 const fetchCompanies = catchAsyncErrors(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 25;
+  const offset = (page - 1) * limit;
 
+  const totalCompanies = await Company.count();
   const companies = await Company.findAll({
-    limit: limit,
-    offset: (page - 1) * limit,
+    limit,
+    offset,
   });
 
-  res.status(200).json({ success: true, companies });
+  const totalPages = Math.ceil(totalCompanies / limit);
+
+  res.status(200).json({
+    success: true,
+    companies,
+    totalPages,
+    currentPage: page,
+  });
 });
 
 const fetchCompaniesIdentity = catchAsyncErrors(async (req, res, next) => {

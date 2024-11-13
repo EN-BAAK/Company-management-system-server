@@ -20,7 +20,13 @@ router.get("/", isAuthenticated, fetchShifts);
 
 router.post("/", isAdmin, upload.none(), validateCreateShift, createShift);
 
-router.put("/:shiftId", isAdmin, upload.none(), validateEditShift, editShift);
+router.put(
+  "/:shiftId",
+  isAuthenticated,
+  upload.none(),
+  validateEditShift,
+  editShift
+);
 
 router.delete("/:shiftId", isAdmin, validateDeleteShift, deleteShift);
 

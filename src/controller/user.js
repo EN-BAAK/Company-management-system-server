@@ -1,7 +1,8 @@
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const { catchAsyncErrors } = require("../middleware/catchAsyncErrors");
 const { ErrorHandler } = require("../middleware/errorMiddleware");
 const { User } = require("../models");
+const bcrypt = require("bcryptjs");
 
 const createWorker = catchAsyncErrors(async (req, res, next) => {
   const { fullName, personal_id, phone, password, notes } = req.body;
@@ -56,7 +57,7 @@ const editUser = catchAsyncErrors(async (req, res, next) => {
       password,
       parseInt(process.env.SALT)
     );
-    admin.password = hashedPassword;
+    user.password = hashedPassword;
   }
 
   user.notes = notes ? notes : null;
@@ -100,17 +101,26 @@ const deleteWorker = catchAsyncErrors(async (req, res, next) => {
 const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 25;
+  const offset = (page - 1) * limit;
 
-  const users = await User.findAll({
+  const totalWorkers = (await User.count()) - 1;
+  const workers = await User.findAll({
     attributes: { exclude: ["password", "role"] },
-    limit: limit,
-    offset: (page - 1) * limit,
+    limit,
+    offset,
     where: {
       id: { [Op.ne]: 1 },
     },
   });
 
-  res.status(200).json({ success: true, workers: [...users] });
+  const totalPages = Math.ceil(totalWorkers / limit);
+
+  res.status(200).json({
+    success: true,
+    workers,
+    totalPages,
+    currentPage: page,
+  });
 });
 
 const fetchWorkersIdentity = catchAsyncErrors(async (req, res, next) => {

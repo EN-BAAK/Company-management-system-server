@@ -259,11 +259,13 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
     order: [["date", "DESC"]],
   });
 
+  const totalPages = Math.ceil(shifts.count / limit);
+
   res.status(200).json({
     success: true,
     message: "Shifts retrieved successfully",
     shifts: shifts.rows,
-    totalRecords: shifts.count,
+    totalPages,
   });
 });
 
