@@ -17,7 +17,7 @@ const createShift = catchAsyncErrors(async (req, res, next) => {
 
   const newShift = await Shift.create({
     date,
-    workerId,
+    workerId: workerId || null,
     companyId,
     workType,
     startHour,
@@ -26,6 +26,23 @@ const createShift = catchAsyncErrors(async (req, res, next) => {
     notes,
   });
 
+  const includeOptions = [
+    {
+      model: Company,
+      as: "company",
+      attributes: ["name"],
+    },
+  ];
+
+  if (workerId) {
+    includeOptions.push({
+      model: User,
+      as: "worker",
+      attributes: ["fullName", "phone"],
+    });
+  }
+
+  // Fetch the shift with additional details
   const shiftWithDetails = await Shift.findOne({
     where: { id: newShift.id },
     attributes: [
@@ -39,18 +56,7 @@ const createShift = catchAsyncErrors(async (req, res, next) => {
       "location",
       "notes",
     ],
-    include: [
-      {
-        model: User,
-        as: "worker",
-        attributes: ["fullName", "phone"],
-      },
-      {
-        model: Company,
-        as: "company",
-        attributes: ["name"],
-      },
-    ],
+    include: includeOptions,
   });
 
   const shift = {
@@ -65,11 +71,13 @@ const createShift = catchAsyncErrors(async (req, res, next) => {
     endHour: shiftWithDetails.endHour,
     location: shiftWithDetails.location,
     notes: shiftWithDetails.notes,
-    worker: {
-      id: shiftWithDetails.workerId,
-      fullName: shiftWithDetails.worker.fullName,
-      phone: shiftWithDetails.worker.phone,
-    },
+    worker: workerId
+      ? {
+          id: shiftWithDetails.workerId,
+          fullName: shiftWithDetails.worker.fullName,
+          phone: shiftWithDetails.worker.phone,
+        }
+      : null,
   };
 
   res.status(200).json({
@@ -109,6 +117,22 @@ const editShift = catchAsyncErrors(async (req, res, next) => {
 
   await shift.save();
 
+  const includeOptions = [
+    {
+      model: Company,
+      as: "company",
+      attributes: ["name"],
+    },
+  ];
+
+  if (workerId) {
+    includeOptions.push({
+      model: User,
+      as: "worker",
+      attributes: ["fullName", "phone"],
+    });
+  }
+
   const updatedShift = await Shift.findOne({
     where: { id: shift.id },
     attributes: [
@@ -122,18 +146,7 @@ const editShift = catchAsyncErrors(async (req, res, next) => {
       "location",
       "notes",
     ],
-    include: [
-      {
-        model: User,
-        as: "worker",
-        attributes: ["fullName", "phone"],
-      },
-      {
-        model: Company,
-        as: "company",
-        attributes: ["name"],
-      },
-    ],
+    include: includeOptions,
   });
 
   const newShift = {
@@ -144,15 +157,19 @@ const editShift = catchAsyncErrors(async (req, res, next) => {
     endHour: updatedShift.endHour,
     location: updatedShift.location,
     notes: updatedShift.notes,
-    worker: {
-      id: updatedShift.workerId,
-      fullName: updatedShift.worker?.fullName,
-      phone: updatedShift.worker?.phone,
-    },
-    company: {
-      id: updatedShift.companyId,
-      name: updatedShift.company.name,
-    },
+    worker: workerId
+      ? {
+          id: updatedShift.workerId,
+          fullName: updatedShift.worker?.fullName,
+          phone: updatedShift.worker?.phone,
+        }
+      : null,
+    company: companyId
+      ? {
+          id: updatedShift.companyId,
+          name: updatedShift.company?.name,
+        }
+      : null,
   };
 
   res.status(200).json({
@@ -182,7 +199,7 @@ const deleteShift = catchAsyncErrors(async (req, res, next) => {
 
 const fetchShifts = catchAsyncErrors(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = 10;
+  const limit = parseInt(req.query.limit) || 15;
   const offset = (page - 1) * limit;
 
   const { workerName, workerPhone, companyName, date1, date2 } = req.query;
@@ -190,23 +207,32 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
   const where = {};
 
   if (workerName) {
-    where["$worker.fullName$"] = { [Op.iLike]: `%${workerName}%` };
+    where["$worker.fullName$"] = { [Op.eq]: workerName };
   }
 
   if (workerPhone) {
-    where["$worker.phone$"] = { [Op.iLike]: `%${workerPhone}%` };
+    where["$worker.phone$"] = { [Op.like]: `${workerPhone}` };
   }
 
   if (companyName) {
-    where["$company.name$"] = { [Op.iLike]: `%${companyName}%` };
+    where["$company.name$"] = { [Op.like]: `${companyName}` };
   }
 
   if (date1 && date2) {
-    where.date = { [Op.between]: [new Date(date1), new Date(date2)] };
+    const startDate = new Date(date1);
+    const endDate = new Date(date2);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+
+    where.date = { [Op.between]: [startDate, endDate] };
   } else if (date1) {
-    where.date = { [Op.eq]: new Date(date1) };
+    const startDate = new Date(date1);
+    startDate.setHours(0, 0, 0, 0);
+    where.date = { [Op.eq]: startDate };
   } else if (date2) {
-    where.date = { [Op.eq]: new Date(date2) };
+    const endDate = new Date(date2);
+    endDate.setHours(23, 59, 59, 999);
+    where.date = { [Op.eq]: endDate };
   }
 
   const shifts = await Shift.findAndCountAll({

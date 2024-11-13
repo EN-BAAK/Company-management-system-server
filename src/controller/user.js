@@ -99,12 +99,12 @@ const deleteWorker = catchAsyncErrors(async (req, res, next) => {
 
 const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
-  const offset = parseInt(req.query.offset) || 20;
+  const limit = parseInt(req.query.limit) || 25;
 
   const users = await User.findAll({
     attributes: { exclude: ["password", "role"] },
-    limit: offset,
-    offset: (page - 1) * offset,
+    limit: limit,
+    offset: (page - 1) * limit,
     where: {
       id: { [Op.ne]: 1 },
     },

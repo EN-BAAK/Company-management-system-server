@@ -69,11 +69,11 @@ const deleteCompany = catchAsyncErrors(async (req, res, next) => {
 
 const fetchCompanies = catchAsyncErrors(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
-  const offset = parseInt(req.query.offset) || 20;
+  const limit = parseInt(req.query.limit) || 25;
 
   const companies = await Company.findAll({
-    limit: offset,
-    offset: (page - 1) * offset,
+    limit: limit,
+    offset: (page - 1) * limit,
   });
 
   res.status(200).json({ success: true, companies });
