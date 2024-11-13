@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const { catchAsyncErrors } = require("../middleware/catchAsyncErrors");
 const { ErrorHandler } = require("../middleware/errorMiddleware");
 const { User } = require("../models");
@@ -113,9 +113,12 @@ const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ success: true, workers: [...users] });
 });
 
-const fetchWorkersID_FullName = catchAsyncErrors(async (req, res, next) => {
+const fetchWorkersIdentity = catchAsyncErrors(async (req, res, next) => {
   const users = await User.findAll({
     attributes: ["id", "fullName"],
+    where: {
+      role: { [Op.ne]: "admin" },
+    },
   });
 
   res.status(200).json({ success: true, workers: [...users] });
@@ -126,5 +129,5 @@ module.exports = {
   editUser,
   deleteWorker,
   fetchWorkers,
-  fetchWorkersID_FullName,
+  fetchWorkersIdentity,
 };

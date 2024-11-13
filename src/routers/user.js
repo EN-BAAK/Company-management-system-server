@@ -7,7 +7,7 @@ const {
   editUser,
   deleteWorker,
   fetchWorkers,
-  fetchWorkersID_FullName,
+  fetchWorkersIdentity,
 } = require("../controller/user");
 const {
   validateCreateWorker,
@@ -17,7 +17,7 @@ const {
 const router = express.Router();
 
 router.get("/", isAdmin, fetchWorkers);
-router.get("/identity", isAdmin, fetchWorkersID_FullName);
+router.get("/identity", isAdmin, fetchWorkersIdentity);
 
 router.post("/", isAdmin, validateCreateWorker, createWorker);
 

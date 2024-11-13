@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      work_type: {
+      workType: {
         type: DataTypes.STRING,
         allowNull: true,
       },

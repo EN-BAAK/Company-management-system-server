@@ -22,16 +22,17 @@ const validateCreateShift = [
     .withMessage("Work type must be a string if provided"),
   body("startHour")
     .optional({ nullable: true })
-    .matches(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/)
     .withMessage(
-      "Start hour must be a valid time in HH:MM:SS format if provided"
+      "Start hour must be a valid time in HH:MM or HH:MM:SS format if provided"
     ),
   body("endHour")
     .optional({ nullable: true })
-    .matches(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/)
     .withMessage(
-      "End hour must be a valid time in HH:MM:SS format if provided"
+      "End hour must be a valid time in HH:MM or HH:MM:SS format if provided"
     ),
+
   (req, res, next) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {
@@ -63,16 +64,17 @@ const validateEditShift = [
     .withMessage("Work type must be a string if provided"),
   body("startHour")
     .optional({ nullable: true })
-    .matches(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/)
     .withMessage(
-      "Start hour must be a valid time in HH:MM:SS format if provided"
+      "Start hour must be a valid time in HH:MM or HH:MM:SS format if provided"
     ),
   body("endHour")
     .optional({ nullable: true })
-    .matches(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/)
     .withMessage(
-      "End hour must be a valid time in HH:MM:SS format if provided"
+      "End hour must be a valid time in HH:MM or HH:MM:SS format if provided"
     ),
+
   (req, res, next) => {
     const result = validationResult(req);
     if (!result.isEmpty()) {

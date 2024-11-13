@@ -7,6 +7,7 @@ const {
   editCompany,
   deleteCompany,
   fetchCompanies,
+  fetchCompaniesIdentity,
 } = require("../controller/company");
 const {
   validateCreateCompany,
@@ -17,6 +18,7 @@ const {
 const router = express.Router();
 
 router.get("/", isAdmin, fetchCompanies);
+router.get("/identity", isAdmin, fetchCompaniesIdentity);
 
 router.post("/", isAdmin, validateCreateCompany, createCompany);
 

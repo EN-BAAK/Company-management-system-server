@@ -1,5 +1,7 @@
 const express = require("express");
 const { isAdmin, isAuthenticated } = require("../middleware/auth");
+const multer = require("multer");
+const upload = multer();
 const {
   createShift,
   editShift,
@@ -16,9 +18,9 @@ const router = express.Router();
 
 router.get("/", isAuthenticated, fetchShifts);
 
-router.post("/", isAdmin, validateCreateShift, createShift);
+router.post("/", isAdmin, upload.none(), validateCreateShift, createShift);
 
-router.put("/:shiftId", isAdmin, validateEditShift, editShift);
+router.put("/:shiftId", isAdmin, upload.none(), validateEditShift, editShift);
 
 router.delete("/:shiftId", isAdmin, validateDeleteShift, deleteShift);
 

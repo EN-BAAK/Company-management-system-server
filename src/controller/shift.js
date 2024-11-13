@@ -8,7 +8,7 @@ const createShift = catchAsyncErrors(async (req, res, next) => {
     date,
     workerId,
     companyId,
-    work_type,
+    workType,
     startHour,
     endHour,
     location,
@@ -19,23 +19,77 @@ const createShift = catchAsyncErrors(async (req, res, next) => {
     date,
     workerId,
     companyId,
-    work_type,
+    workType,
     startHour,
     endHour,
     location,
     notes,
   });
 
+  const shiftWithDetails = await Shift.findOne({
+    where: { id: newShift.id },
+    attributes: [
+      "id",
+      "date",
+      "workerId",
+      "companyId",
+      "workType",
+      "startHour",
+      "endHour",
+      "location",
+      "notes",
+    ],
+    include: [
+      {
+        model: User,
+        as: "worker",
+        attributes: ["fullName", "phone"],
+      },
+      {
+        model: Company,
+        as: "company",
+        attributes: ["name"],
+      },
+    ],
+  });
+
+  const shift = {
+    id: shiftWithDetails.id,
+    date: shiftWithDetails.date,
+    company: {
+      id: shiftWithDetails.companyId,
+      name: shiftWithDetails.company.name,
+    },
+    workType: shiftWithDetails.workType,
+    startHour: shiftWithDetails.startHour,
+    endHour: shiftWithDetails.endHour,
+    location: shiftWithDetails.location,
+    notes: shiftWithDetails.notes,
+    worker: {
+      id: shiftWithDetails.workerId,
+      fullName: shiftWithDetails.worker.fullName,
+      phone: shiftWithDetails.worker.phone,
+    },
+  };
+
   res.status(200).json({
     success: true,
     message: "Shift created successfully",
-    shift: newShift,
+    shift,
   });
 });
 
 const editShift = catchAsyncErrors(async (req, res, next) => {
-  const { date, workerId, companyId, work_type, startHour, endHour, location } =
-    req.body;
+  const {
+    date,
+    workerId,
+    companyId,
+    workType,
+    startHour,
+    endHour,
+    location,
+    notes,
+  } = req.body;
   const shiftId = req.params.shiftId;
 
   const shift = await Shift.findByPk(shiftId);
@@ -45,20 +99,66 @@ const editShift = catchAsyncErrors(async (req, res, next) => {
   }
 
   if (date) shift.date = date;
-  shift.workerId = workerId ? workerId : null;
-  if (companyId) shift.companyId = companyId;
-  if (location) shift.location = location;
-  shift.notes = notes ? notes : null;
-  shift.work_type = work_type ? work_type : null;
-  shift.startHour = startHour ? startHour : null;
-  shift.endHour = endHour ? endHour : null;
+  shift.workerId = workerId || null;
+  shift.companyId = companyId || null;
+  shift.location = location || null;
+  shift.notes = notes || null;
+  shift.workType = workType || null;
+  shift.startHour = startHour || null;
+  shift.endHour = endHour || null;
 
   await shift.save();
+
+  const updatedShift = await Shift.findOne({
+    where: { id: shift.id },
+    attributes: [
+      "id",
+      "date",
+      "workerId",
+      "companyId",
+      "workType",
+      "startHour",
+      "endHour",
+      "location",
+      "notes",
+    ],
+    include: [
+      {
+        model: User,
+        as: "worker",
+        attributes: ["fullName", "phone"],
+      },
+      {
+        model: Company,
+        as: "company",
+        attributes: ["name"],
+      },
+    ],
+  });
+
+  const newShift = {
+    id: updatedShift.id,
+    date: updatedShift.date,
+    workType: updatedShift.workType,
+    startHour: updatedShift.startHour,
+    endHour: updatedShift.endHour,
+    location: updatedShift.location,
+    notes: updatedShift.notes,
+    worker: {
+      id: updatedShift.workerId,
+      fullName: updatedShift.worker?.fullName,
+      phone: updatedShift.worker?.phone,
+    },
+    company: {
+      id: updatedShift.companyId,
+      name: updatedShift.company.name,
+    },
+  };
 
   res.status(200).json({
     success: true,
     message: "Shift updated successfully",
-    shift,
+    shift: newShift,
   });
 });
 
@@ -123,11 +223,19 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
       {
         model: Company,
         as: "company",
-        attributes: ["name"],
+        attributes: ["name", "id"],
         required: true,
       },
     ],
-    attributes: ["id", "startHour", "endHour", "date", "location"],
+    attributes: [
+      "id",
+      "startHour",
+      "endHour",
+      "date",
+      "location",
+      "workType",
+      "notes",
+    ],
     order: [["date", "DESC"]],
   });
 

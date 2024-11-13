@@ -79,9 +79,18 @@ const fetchCompanies = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ success: true, companies });
 });
 
+const fetchCompaniesIdentity = catchAsyncErrors(async (req, res, next) => {
+  const companies = await Company.findAll({
+    attributes: ["id", "name"],
+  });
+
+  res.status(200).json({ success: true, companies });
+});
+
 module.exports = {
   createCompany,
   editCompany,
   deleteCompany,
   fetchCompanies,
+  fetchCompaniesIdentity,
 };
