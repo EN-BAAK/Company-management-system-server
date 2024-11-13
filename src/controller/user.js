@@ -4,7 +4,7 @@ const { ErrorHandler } = require("../middleware/errorMiddleware");
 const { User } = require("../models");
 
 const createWorker = catchAsyncErrors(async (req, res, next) => {
-  const { fullName, personal_id, phone, work_type, password, notes } = req.body;
+  const { fullName, personal_id, phone, password, notes } = req.body;
 
   const user = await User.findOne({
     where: { phone },
@@ -113,20 +113,18 @@ const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ success: true, workers: [...users] });
 });
 
-// const fetchSpecificWorker = catchAsyncErrors(async (req, res, next) => {
-//   const id = req.params.userId;
+const fetchWorkersID_FullName = catchAsyncErrors(async (req, res, next) => {
+  const users = await User.findAll({
+    attributes: ["id", "fullName"],
+  });
 
-//   const users = await User.findByPk(id, {
-//     attributes: { exclude: ["password", "role"] },
-//   });
-
-//   res.status(200).json({ success: true, worker: user });
-// });
+  res.status(200).json({ success: true, workers: [...users] });
+});
 
 module.exports = {
   createWorker,
   editUser,
   deleteWorker,
   fetchWorkers,
-  // fetchSpecificWorker,
+  fetchWorkersID_FullName,
 };

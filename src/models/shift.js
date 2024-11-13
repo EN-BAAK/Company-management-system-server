@@ -29,6 +29,14 @@ module.exports = (sequelize, DataTypes) => {
         },
         name: "company_id_foreign_key",
       },
+      location: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      notes: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       work_type: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -51,6 +59,9 @@ module.exports = (sequelize, DataTypes) => {
           name: "date_company_index",
         },
       ],
+      defaultScope: {
+        order: [["createdAt", "DESC"]],
+      },
     }
   );
 

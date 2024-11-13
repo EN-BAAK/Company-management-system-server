@@ -1,6 +1,11 @@
 const express = require("express");
-const { isAdmin } = require("../middleware/auth");
-const { createShift, editShift, deleteShift } = require("../controller/shift");
+const { isAdmin, isAuthenticated } = require("../middleware/auth");
+const {
+  createShift,
+  editShift,
+  deleteShift,
+  fetchShifts,
+} = require("../controller/shift");
 const {
   validateCreateShift,
   validateEditShift,
@@ -9,10 +14,12 @@ const {
 
 const router = express.Router();
 
-router.post("/create", isAdmin, validateCreateShift, createShift);
+router.get("/", isAuthenticated, fetchShifts);
 
-router.put("/edit/:shiftId", isAdmin, validateEditShift, editShift);
+router.post("/", isAdmin, validateCreateShift, createShift);
 
-router.delete("/delete/:shiftId", isAdmin, validateDeleteShift, deleteShift);
+router.put("/:shiftId", isAdmin, validateEditShift, editShift);
+
+router.delete("/:shiftId", isAdmin, validateDeleteShift, deleteShift);
 
 module.exports = router;

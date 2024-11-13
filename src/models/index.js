@@ -44,23 +44,27 @@ db.Shift.belongsTo(db.User, {
   foreignKey: "workerId",
   onDelete: "SET NULL",
   name: "worker_id_foreign_key",
+  as: "worker",
 });
 
 db.User.hasMany(db.Shift, {
   foreignKey: "workerId",
   onDelete: "SET NULL",
+  as: "shifts",
 });
 
 db.Shift.belongsTo(db.Company, {
   foreignKey: "companyId",
   onDelete: "CASCADE",
   name: "company_id_foreign_key",
+  as: "company",
 });
 
 db.Company.hasMany(db.Shift, {
   foreignKey: "companyId",
-  onDelete: "CASCADE", 
+  onDelete: "CASCADE",
   onUpdate: "CASCADE",
+  as: "shifts",
 });
 
 db.sequelize = sequelize;
