@@ -63,41 +63,65 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   });
 
   const logoPath = path.join(__dirname, "../assets/logo.jpg");
-  doc.image(logoPath, 50, 40, { width: 250 });
 
-  doc
-    .font("Helvetica")
-    .fontSize(12)
-    .text(`${worker.fullName}`, 380, 50, { align: "right" });
-  doc.text(`${worker.phone}`, 380, 70, { align: "right" });
-  if (worker.personal_id)
-    doc.text(`${worker.personal_id}`, 380, 90, { align: "right" });
+  let totalHours = 0;
+  let currentPage = 1;
 
-  doc.lineWidth(2);
-  doc.moveTo(50, 125).lineTo(550, 125).stroke();
+  // Helper function to add header to each page
+  const addHeader = () => {
+    doc.image(logoPath, 50, 40, { width: 250 });
+
+    doc
+      .font("Helvetica")
+      .fontSize(12)
+      .text(`${worker.fullName}`, 380, 50, { align: "right" });
+    doc.text(`${worker.phone}`, 380, 70, { align: "right" });
+    if (worker.personal_id)
+      doc.text(`${worker.personal_id}`, 380, 90, { align: "right" });
+
+    doc.lineWidth(2);
+    doc.moveTo(50, 125).lineTo(550, 125).stroke();
+  };
+
+  const addFooter = () => {
+    doc.fontSize(10).text(`Page ${currentPage}`, 500, 780, { align: "center" });
+    currentPage += 1;
+  };
 
   const currentDate = new Date().toLocaleDateString();
   doc.fontSize(14).text(currentDate, 380, 110, { align: "right" });
 
+  // Create the first page
+  addHeader();
+
+  // Table Header
   doc
     .fontSize(10)
     .text("Company Name", 65, 135)
     .text("Work Type", 180, 135)
-    .text("Start Hour", 275, 135)
+    .text("Start Hour", 260, 135)
     .text("End Hour", 335, 135)
     .text("Date", 410, 135)
     .text("Total Hours", 485, 135);
-
-  let totalHours = 0;
 
   shifts.forEach((shift, index) => {
     const yPosition = 156 + index * 20;
     const hoursWorked = calculateTimeDifference(shift.startHour, shift.endHour);
 
+    if (yPosition > 700) {
+      addFooter();
+      doc.addPage();
+      addHeader();
+    }
+
     doc.text(shift.company.name, 65, yPosition);
-    doc.text(shift.workType || "N/A", 180, yPosition);
-    doc.text(shift.startHour || "N/A", 275, yPosition);
-    doc.text(shift.endHour || "N/A", 335, yPosition);
+    doc.text(shift.workType || "No work", 180, yPosition);
+    shift.startHour
+      ? doc.text(shift.startHour, 260, yPosition)
+      : doc.text("N/A", 260, yPosition);
+    shift.endHour
+      ? doc.text(shift.endHour, 335, yPosition)
+      : doc.text("N/A", 335, yPosition);
     doc.text(
       shift.date ? new Date(shift.date).toLocaleDateString() : "N/A",
       410,
@@ -120,6 +144,8 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   doc
     .fontSize(12)
     .text(`Total Hours: ${totalHoursString}`, 50, totalSumYPosition);
+
+  // addFooter(); // Add footer and page number at the end
 
   doc.end();
 });
