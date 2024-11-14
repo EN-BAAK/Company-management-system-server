@@ -109,7 +109,7 @@ const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
     limit,
     offset,
     where: {
-      id: { [Op.ne]: 1 },
+      role: { [Op.ne]: "admin" },
     },
   });
 
