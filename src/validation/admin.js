@@ -49,7 +49,7 @@ const validateEditPhone = [
   body("newPhone")
     .notEmpty()
     .withMessage("Mobile number should not be empty")
-    .isInt()
+    .isString()
     .withMessage("Mobile number should be an integer number"),
   (req, res, next) => {
     const result = validationResult(req);

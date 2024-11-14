@@ -58,7 +58,7 @@ const validateEditShift = [
     .optional({ nullable: true })
     .isInt()
     .withMessage("Worker ID must be an integer if provided"),
-  body("work_type")
+  body("workType")
     .optional({ nullable: true })
     .isString()
     .withMessage("Work type must be a string if provided"),

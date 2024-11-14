@@ -10,7 +10,7 @@ const validateCreateCompany = [
   body("phone")
     .notEmpty()
     .withMessage("Phone number should not be empty")
-    .isInt()
+    .isString()
     .withMessage("Phone number should be an integer number"),
   (req, res, next) => {
     const result = validationResult(req);

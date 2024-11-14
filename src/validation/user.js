@@ -10,7 +10,7 @@ const validateCreateWorker = [
   body("phone")
     .notEmpty()
     .withMessage("Mobile number should not be empty")
-    .isInt()
+    .isString()
     .withMessage("Mobile number should be an integer number"),
   body("password")
     .notEmpty()
@@ -30,7 +30,7 @@ const validateCreateWorker = [
 
 const validateEditWorker = [
   body("fullName").isString().optional(),
-  body("phone").isInt().optional(),
+  body("phone").isString().optional(),
   body("personal_id").isInt().optional(),
   body("password").isString().optional(),
   (req, res, next) => {
