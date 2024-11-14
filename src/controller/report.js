@@ -67,7 +67,6 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   let totalHours = 0;
   let currentPage = 1;
 
-  // Helper function to add header to each page
   const addHeader = () => {
     doc.image(logoPath, 50, 40, { width: 250 });
 
@@ -91,10 +90,8 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   const currentDate = new Date().toLocaleDateString();
   doc.fontSize(14).text(currentDate, 380, 110, { align: "right" });
 
-  // Create the first page
   addHeader();
 
-  // Table Header
   doc
     .fontSize(10)
     .text("Company Name", 65, 135)
