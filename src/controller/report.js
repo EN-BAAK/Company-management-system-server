@@ -65,25 +65,20 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   }
 
   if (searcher)
-    if (isNaN(searcher)) {
-      searchCondition[Op.or] = [
-        { "$company.name$": { [Op.like]: `${searcher}%` } },
-        { location: { [Op.like]: `${searcher}%` } },
-      ];
-    } else {
-      searchCondition[Op.or] = [
-        { "$worker.phone$": { [Op.like]: `%${searcher}%` } },
-      ];
-    }
+    searchCondition[Op.or] = [
+      { "$company.name$": { [Op.like]: `${searcher}%` } },
+      { location: { [Op.like]: `${searcher}%` } },
+    ];
 
   Object.assign(where, searchCondition);
-  const shifts = await Shift.findAndCountAll({
+
+  const shifts = await Shift.findAll({
     where,
     include: [
       {
         model: User,
         as: "worker",
-        attributes: ["phone", "id", "fullName"],
+        attributes: ["phone", "id", "fullName", "personal_id"], // Include necessary worker details
         required: false,
       },
       {
@@ -105,6 +100,16 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
     order: [["date", "DESC"]],
   });
 
+  if (shifts.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No shifts found for the given criteria.",
+    });
+  }
+
+  // Extract worker details from the first shift
+  const worker = shifts[0].worker;
+
   const doc = new PDFDocument();
   const chunks = [];
   doc.on("data", (chunk) => chunks.push(chunk));
@@ -112,7 +117,9 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
     const pdfBuffer = Buffer.concat(chunks);
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=${encodeURIComponent(workerName)}_shifts_report.pdf`
+      `attachment; filename=${encodeURIComponent(
+        worker.fullName || "report"
+      )}_shifts_report.pdf`
     );
     res.setHeader("Content-Type", "application/pdf");
     res.send(pdfBuffer);
@@ -130,8 +137,8 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
 
     doc
       .fontSize(12)
-      .text(worker.fullName, 380, 50, { align: "right" })
-      .text(worker.phone, 380, 70, { align: "right" });
+      .text(worker.fullName || "-", 380, 50, { align: "right" })
+      .text(worker.phone || "-", 380, 70, { align: "right" });
     if (worker.personal_id)
       doc.text(worker.personal_id, 380, 90, { align: "right" });
 
@@ -160,7 +167,7 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   addHeader();
 
   let yPosition = 156; // Position just below the header
-  shifts.forEach((shift, index) => {
+  shifts.forEach((shift) => {
     const hoursWorked = calculateTimeDifference(shift.startHour, shift.endHour);
 
     // Check if we need to start a new page
@@ -179,10 +186,10 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
       yPosition
     );
     shift.endHour
-      ? doc.text(shift.endHour.slice(1, 5), 240, yPosition)
+      ? doc.text(shift.endHour.slice(0, 5), 240, yPosition)
       : doc.text("N/A", 240, yPosition);
     shift.startHour
-      ? doc.text(shift.startHour.slice(1, 5), 325, yPosition)
+      ? doc.text(shift.startHour.slice(0, 5), 325, yPosition)
       : doc.text("N/A", 325, yPosition);
     doc.text(shift.workType || "-", 400, yPosition);
     doc.text(shift.company.name, 485, yPosition);
@@ -204,20 +211,17 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   )}`;
 
   // Print total hours on the last page
-  const totalSumYPosition = yPosition + 20;
   doc
     .font(hebrewFontPathBold)
     .fontSize(12)
     .text(
       reverseHebrewText(`סה"כ שעות: ${totalHoursString}`),
       90,
-      totalSumYPosition,
+      yPosition + 20,
       {
         align: "left",
       }
     );
-
-  doc.font(hebrewFontPathRegular);
 
   doc.end();
 });

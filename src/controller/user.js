@@ -126,9 +126,6 @@ const fetchWorkers = catchAsyncErrors(async (req, res, next) => {
 const fetchWorkersIdentity = catchAsyncErrors(async (req, res, next) => {
   const users = await User.findAll({
     attributes: ["id", "fullName"],
-    where: {
-      role: { [Op.ne]: "admin" },
-    },
   });
 
   res.status(200).json({ success: true, workers: [...users] });
