@@ -242,9 +242,9 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
 
   Object.assign(where, searchCondition);
   const shifts = await Shift.findAndCountAll({
+    where,
     limit,
     offset,
-    where,
     include: [
       {
         model: User,

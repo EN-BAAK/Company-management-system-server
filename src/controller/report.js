@@ -35,30 +35,74 @@ const calculateTimeDifference = (startHour, endHour) => {
   return `${String(diffH).padStart(2, "0")}:${String(diffM).padStart(2, "00")}`;
 };
 
-// Utility function to reverse Hebrew text
 const reverseHebrewText = (text) => text.split(" ").reverse().join("  ");
 
 const buildReport = catchAsyncErrors(async (req, res, next) => {
-  const { workerName } = req.query;
+  const { workerName, workerPhone, companyName, date1, date2, searcher } =
+    req.query;
 
-  const worker = await User.findOne({
-    where: { fullName: { [Op.like]: `%${workerName}%` } },
-    attributes: ["fullName", "phone", "personal_id", "id"],
-  });
+  const where = {};
+  const searchCondition = {};
 
-  if (!worker) {
-    return next(
-      new ErrorHandler(`Worker with name ${workerName} not found`, 404)
-    );
+  where["$worker.fullName$"] = { [Op.like]: `%${workerName}%` };
+  if (workerPhone) where["$worker.phone$"] = { [Op.like]: `%${workerPhone}%` };
+  if (companyName) where["$company.name$"] = { [Op.like]: `%${companyName}%` };
+
+  if (date1 && date2) {
+    const startDate = new Date(date1);
+    const endDate = new Date(date2);
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+    where.date = { [Op.between]: [startDate, endDate] };
+  } else if (date1) {
+    const startDate = new Date(date1);
+    startDate.setHours(0, 0, 0, 0);
+    where.date = { [Op.eq]: startDate };
+  } else if (date2) {
+    const endDate = new Date(date2);
+    endDate.setHours(23, 59, 59, 999);
+    where.date = { [Op.eq]: endDate };
   }
 
-  const shifts = await Shift.findAll({
-    where: { workerId: worker.id },
+  if (searcher)
+    if (isNaN(searcher)) {
+      searchCondition[Op.or] = [
+        { "$company.name$": { [Op.like]: `${searcher}%` } },
+        { location: { [Op.like]: `${searcher}%` } },
+      ];
+    } else {
+      searchCondition[Op.or] = [
+        { "$worker.phone$": { [Op.like]: `%${searcher}%` } },
+      ];
+    }
+
+  Object.assign(where, searchCondition);
+  const shifts = await Shift.findAndCountAll({
+    where,
     include: [
-      { model: Company, as: "company", attributes: ["name"], required: true },
+      {
+        model: User,
+        as: "worker",
+        attributes: ["phone", "id", "fullName"],
+        required: false,
+      },
+      {
+        model: Company,
+        as: "company",
+        attributes: ["name", "id"],
+        required: true,
+      },
     ],
-    attributes: ["workType", "startHour", "endHour", "date"],
-    order: [["date", "ASC"]],
+    attributes: [
+      "id",
+      "startHour",
+      "endHour",
+      "date",
+      "location",
+      "workType",
+      "notes",
+    ],
+    order: [["date", "DESC"]],
   });
 
   const doc = new PDFDocument();
