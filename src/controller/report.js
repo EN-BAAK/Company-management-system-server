@@ -137,7 +137,9 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
 
     doc
       .fontSize(12)
-      .text(worker.fullName || "-", 380, 50, { align: "right" })
+      .text(reverseHebrewText(worker.fullName) || "-", 380, 50, {
+        align: "right",
+      })
       .text(worker.phone || "-", 380, 70, { align: "right" });
     if (worker.personal_id)
       doc.text(worker.personal_id, 380, 90, { align: "right" });
@@ -148,7 +150,6 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
     const currentDate = new Date().toLocaleDateString();
     doc.fontSize(14).text(currentDate, 380, 110, { align: "right" });
 
-    // Reversed column headers in Hebrew
     doc
       .fontSize(10)
       .text(reverseHebrewText(`סה"כ שעות`), 90, 135)
@@ -156,7 +157,7 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
       .text(reverseHebrewText("שעת סיום"), 240, 135)
       .text(reverseHebrewText("שעת התחלה"), 325, 135)
       .text(reverseHebrewText("סוג עבודה"), 400, 135)
-      .text(reverseHebrewText("שם החברה"), 485, 135);
+      .text(reverseHebrewText("שם החברה"), 485, 135)
   };
 
   const addFooter = () => {
@@ -178,18 +179,24 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
       yPosition = 156; // Reset yPosition just below the header
     }
 
+    // Draw a background rectangle for better row separation
+    doc.rect(50, yPosition - 5, 505, 20).fill("#f9f9f9").stroke();
+
     // Shift details in the reversed column order
-    doc.text(hoursWorked, 90, yPosition);
-    doc.text(
-      shift.date ? new Date(shift.date).toLocaleDateString() : "N/A",
-      170,
-      yPosition
-    );
+    doc.fillColor("black")
+      .text(hoursWorked, 90, yPosition)
+      .text(
+        shift.date ? new Date(shift.date).toLocaleDateString() : "N/A",
+        170,
+        yPosition,
+      );
     shift.endHour
       ? doc.text(shift.endHour.slice(0, 5), 240, yPosition)
       : doc.text("N/A", 240, yPosition);
     shift.startHour
-      ? doc.text(shift.startHour.slice(0, 5), 325, yPosition)
+      ? doc.text(shift.startHour.slice(0, 5), 325, yPosition, {
+          align: "right",
+        })
       : doc.text("N/A", 325, yPosition);
     doc.text(shift.workType || "-", 400, yPosition);
     doc.text(shift.company.name, 485, yPosition);
@@ -198,8 +205,8 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
     const [hours, minutes] = hoursWorked.split(":").map(Number);
     totalHours += hours + minutes / 60;
 
-    // Move down for next row
-    yPosition += 20;
+    // Move down for the next row
+    yPosition += 25;
   });
 
   // Final total hours calculation
@@ -211,6 +218,13 @@ const buildReport = catchAsyncErrors(async (req, res, next) => {
   )}`;
 
   // Print total hours on the last page
+  if (yPosition > 680) {
+    addFooter();
+    doc.addPage();
+    addHeader();
+    yPosition = 156;
+  }
+
   doc
     .font(hebrewFontPathBold)
     .fontSize(12)
