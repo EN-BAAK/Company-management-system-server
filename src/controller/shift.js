@@ -42,7 +42,6 @@ const createShift = catchAsyncErrors(async (req, res, next) => {
     });
   }
 
-  // Fetch the shift with additional details
   const shiftWithDetails = await Shift.findOne({
     where: { id: newShift.id },
     attributes: [
@@ -202,14 +201,14 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
   const limit = parseInt(req.query.limit) || 15;
   const offset = (page - 1) * limit;
 
-  const { workerName, workerPhone, companyName, date1, date2 } = req.query;
+  const { workerName, workerPhone, companyName, date1, date2, searcher } =
+    req.query;
 
   const where = {};
+  const searchCondition = {};
 
   if (workerName) where["$worker.fullName$"] = { [Op.like]: `%${workerName}%` };
-
   if (workerPhone) where["$worker.phone$"] = { [Op.like]: `%${workerPhone}%` };
-
   if (companyName) where["$company.name$"] = { [Op.like]: `%${companyName}%` };
 
   if (date1 && date2) {
@@ -217,7 +216,6 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
     const endDate = new Date(date2);
     startDate.setHours(0, 0, 0, 0);
     endDate.setHours(23, 59, 59, 999);
-
     where.date = { [Op.between]: [startDate, endDate] };
   } else if (date1) {
     const startDate = new Date(date1);
@@ -229,6 +227,20 @@ const fetchShifts = catchAsyncErrors(async (req, res, next) => {
     where.date = { [Op.eq]: endDate };
   }
 
+  if (searcher)
+    if (isNaN(searcher)) {
+      searchCondition[Op.or] = [
+        { "$worker.fullName$": { [Op.like]: `${searcher}%` } },
+        { "$company.name$": { [Op.like]: `${searcher}%` } },
+        { location: { [Op.like]: `${searcher}%` } },
+      ];
+    } else {
+      searchCondition[Op.or] = [
+        { "$worker.phone$": { [Op.like]: `%${searcher}%` } },
+      ];
+    }
+
+  Object.assign(where, searchCondition);
   const shifts = await Shift.findAndCountAll({
     limit,
     offset,

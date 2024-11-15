@@ -18,7 +18,7 @@ const app = express();
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL],

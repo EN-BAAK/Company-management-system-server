@@ -5,10 +5,10 @@ const basename = path.basename(__filename);
 const db = {};
 
 const sequelize = new Sequelize({
-  host: process.env.DATABASE_HOST,
-  database: process.env.DATABASE_NAME,
-  username: process.env.DATABASE_USERNAME,
-  password: process.env.DATABASE_PASSWORD,
+  host: "localhost",
+  database: "company_managment",
+  username: "root",
+  password: "bh5119024bh",
   dialect: "mysql",
   port: 3306,
   define: {
