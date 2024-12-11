@@ -164,7 +164,15 @@ Admins have access to the following endpoints:
   - DATABASE_USERNAME
   - DATABASE_HOST
 
-4. Run the application:
+4. In your database, run the following command:
+    ```sql
+      INSERT INTO users (fullName, password, phone, role) 
+      VALUES ('Admin', '$2a$10$Mg30BfcdCGAsuOepJasjr.VLtC3jZuTuRxqIX.O2g3jhI9xePzy06', '123', 'admin');
+    ```
+    **Note:** The password here is `123`.
+
+
+5. Run the application:
    ```bash
    npm start
    ```
